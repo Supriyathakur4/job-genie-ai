@@ -1,56 +1,64 @@
+"use client";
+
 import Link from "next/link";
-import { Briefcase, FileText, LayoutDashboard, LogOut } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Briefcase, FileText, LogOut } from "lucide-react";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  const navItem = (href: string, label: string, icon: any) => {
+    const Icon = icon;
+    const active = pathname === href;
+
+    return (
+      <Link
+        href={href}
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+        ${
+          active
+            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
+            : "text-gray-300 hover:bg-gray-800 hover:text-white"
+        }`}
+      >
+        <Icon size={20} />
+        {label}
+      </Link>
+    );
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
+
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-gray-100 flex flex-col justify-between p-6">
+      <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col justify-between">
+
         <div>
-          <h2 className="text-xl font-semibold tracking-wide mb-10">
-            Job Genie
+          <h2 className="text-2xl font-bold mb-10 tracking-wide">
+            Job Genie ✨
           </h2>
 
-          <nav className="flex flex-col gap-6 text-sm">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 hover:text-white transition"
-            >
-              <LayoutDashboard size={18} />
-              Dashboard
-            </Link>
-
-            <Link
-              href="/dashboard/applications"
-              className="flex items-center gap-3 hover:text-white transition"
-            >
-              <Briefcase size={18} />
-              Applications
-            </Link>
-
-            <Link
-              href="/dashboard/resume"
-              className="flex items-center gap-3 hover:text-white transition"
-            >
-              <FileText size={18} />
-              Resume Analyzer
-            </Link>
+          <nav className="space-y-3">
+            {navItem("/dashboard", "Dashboard", LayoutDashboard)}
+            {navItem("/dashboard/applications", "Applications", Briefcase)}
+            {navItem("/dashboard/resume", "Resume Analyzer", FileText)}
           </nav>
         </div>
 
-        <button className="flex items-center gap-3 text-sm text-gray-400 hover:text-red-400 transition">
+        <button className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500 hover:bg-red-600 transition">
           <LogOut size={18} />
           Logout
         </button>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10">{children}</main>
+      <main className="flex-1 p-10 bg-gradient-to-br from-gray-100 to-gray-200">
+        {children}
+      </main>
     </div>
   );
 }
-

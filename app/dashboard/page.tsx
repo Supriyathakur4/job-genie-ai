@@ -92,6 +92,36 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-8">
+          {/* AI Insight Panel */}
+<div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-2xl">
+  <h2 className="text-2xl font-semibold mb-4">
+    🤖 AI Career Insight
+  </h2>
+
+  {total === 0 && (
+    <p>
+      You haven’t started applying yet. Begin your journey today 
+    </p>
+  )}
+
+  {total > 0 && interviews === 0 && (
+    <p>
+      Try improving your resume keywords to increase interview chances.
+    </p>
+  )}
+
+  {interviews > 0 && offers === 0 && (
+    <p>
+      Great progress! Focus on interview preparation to convert offers.
+    </p>
+  )}
+
+  {offers > 0 && (
+    <p>
+      Excellent work! You are converting applications successfully 
+    </p>
+  )}
+</div>
 
           {/* Interview Bar */}
           <div>

@@ -11,33 +11,33 @@ interface Application {
 }
 
 export default function ApplicationsPage() {
+
   const [applications, setApplications] = useState<Application[]>([]);
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
   const [status, setStatus] = useState("Applied");
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchApplications();
   }, []);
 
   const fetchApplications = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/applications");
 
-      if (!res.ok) {
-        console.error("Failed to fetch applications");
-        setLoading(false);
-        return;
-      }
+    const token = localStorage.getItem("token");
 
-      const data = await res.json();
+    const res = await fetch("/api/applications", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (Array.isArray(data)) {
       setApplications(data);
-    } catch (error) {
-      console.error("Error fetching applications:", error);
-    } finally {
-      setLoading(false);
+    } else {
+      console.error("API Error:", data);
+      setApplications([]);
     }
   };
 
@@ -46,39 +46,68 @@ export default function ApplicationsPage() {
 
     if (!company || !role) return;
 
-    try {
-      const res = await fetch("/api/applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ company, role, status }),
-      });
+    const token = localStorage.getItem("token");
 
-      if (!res.ok) {
-        console.error("Failed to create application");
-        return;
-      }
+    await fetch("/api/applications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ company, role, status }),
+    });
 
-      setCompany("");
-      setRole("");
-      setStatus("Applied");
+    setCompany("");
+    setRole("");
+    setStatus("Applied");
 
-      fetchApplications();
-    } catch (error) {
-      console.error("Error creating application:", error);
-    }
+    fetchApplications();
+  };
+
+  const deleteApplication = async (id: string) => {
+
+    const token = localStorage.getItem("token");
+
+    await fetch("/api/applications", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    fetchApplications();
+  };
+
+  const updateStatus = async (id: string, newStatus: string) => {
+
+    const token = localStorage.getItem("token");
+
+    await fetch("/api/applications", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id, status: newStatus }),
+    });
+
+    fetchApplications();
   };
 
   return (
     <div className="space-y-8">
+
       <h1 className="text-3xl font-bold">Applications</h1>
 
-      {/* Add Form */}
+      {/* FORM */}
+
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-xl shadow space-y-4"
       >
+
         <input
           className="w-full border p-2 rounded"
           placeholder="Company"
@@ -104,41 +133,72 @@ export default function ApplicationsPage() {
           <option>Rejected</option>
         </select>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
+        <button className="bg-blue-600 text-white px-4 py-2 rounded">
           Add Application
         </button>
+
       </form>
 
-      {/* Applications List */}
-      <div className="bg-white p-6 rounded-xl shadow">
-        <h2 className="text-xl font-semibold mb-4">Your Applications</h2>
+      {/* APPLICATION LIST */}
 
-        {loading ? (
-          <p>Loading applications...</p>
-        ) : applications.length === 0 ? (
+      <div className="bg-white p-6 rounded-xl shadow">
+
+        <h2 className="text-xl font-semibold mb-4">
+          Your Applications
+        </h2>
+
+        {applications.length === 0 ? (
           <p>No applications yet.</p>
         ) : (
+
           <ul className="space-y-3">
+
             {applications.map((app) => (
+
               <li
                 key={app._id}
-                className="border p-3 rounded flex justify-between"
+                className="border p-4 rounded flex justify-between items-center"
               >
+
                 <div>
                   <p className="font-semibold">{app.company}</p>
                   <p className="text-sm text-gray-500">{app.role}</p>
                 </div>
-                <span className="text-sm font-medium">
-                  {app.status}
-                </span>
+
+                <div className="flex gap-3">
+
+                  <select
+                    value={app.status}
+                    onChange={(e) =>
+                      updateStatus(app._id, e.target.value)
+                    }
+                    className="border p-1 rounded"
+                  >
+                    <option>Applied</option>
+                    <option>Interview</option>
+                    <option>Offer</option>
+                    <option>Rejected</option>
+                  </select>
+
+                  <button
+                    onClick={() => deleteApplication(app._id)}
+                    className="text-red-500"
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
               </li>
+
             ))}
+
           </ul>
+
         )}
+
       </div>
+
     </div>
   );
 }

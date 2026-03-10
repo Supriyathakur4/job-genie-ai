@@ -1,12 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Briefcase,
-  CalendarCheck,
-  Award,
-  TrendingUp,
-} from "lucide-react";
+import { Briefcase, CalendarCheck, Award } from "lucide-react";
+import ApplicationChart from "@/components/ApplicationChart";
 
 export default function DashboardPage() {
   const [total, setTotal] = useState(0);
@@ -15,8 +11,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem("applications");
+
     if (saved) {
       const apps = JSON.parse(saved);
+
       setTotal(apps.length);
       setInterviews(apps.filter((a: any) => a.status === "Interview").length);
       setOffers(apps.filter((a: any) => a.status === "Offer").length);
@@ -26,135 +24,127 @@ export default function DashboardPage() {
   const interviewRate = total ? ((interviews / total) * 100).toFixed(0) : 0;
   const offerRate = total ? ((offers / total) * 100).toFixed(0) : 0;
 
-  return (
-    <div className="space-y-12">
+  const chartData = [
+    { status: "Applied", count: total },
+    { status: "Interview", count: interviews },
+    { status: "Offer", count: offers },
+  ];
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-10 rounded-3xl text-white shadow-2xl">
-        <h1 className="text-4xl font-bold mb-3">
-          AI Career Dashboard
+  return (
+    <div className="max-w-6xl mx-auto space-y-10">
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white p-10 rounded-3xl shadow-xl">
+        <h1 className="text-4xl font-bold tracking-tight">
+          ✨ AI Career Dashboard
         </h1>
-        <p className="text-lg opacity-90">
+        <p className="mt-2 text-white/90">
           Track applications, analyze performance, and optimize your job search with intelligent insights.
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        {/* Total */}
-        <div className="backdrop-blur-lg bg-white/70 p-8 rounded-3xl shadow-xl hover:scale-105 transition duration-300">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-gray-500">Total Applications</p>
-              <h2 className="text-4xl font-bold mt-2">{total}</h2>
-            </div>
-            <Briefcase size={42} className="text-indigo-600" />
+        {/* Applications */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
+          <div>
+            <p className="opacity-80">Total Applications</p>
+            <h2 className="text-3xl font-bold mt-2">{total}</h2>
           </div>
+          <Briefcase size={36} />
         </div>
 
         {/* Interviews */}
-        <div className="backdrop-blur-lg bg-white/70 p-8 rounded-3xl shadow-xl hover:scale-105 transition duration-300">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-gray-500">Interviews</p>
-              <h2 className="text-4xl font-bold mt-2">{interviews}</h2>
-              <p className="text-sm text-indigo-500 mt-2">
-                {interviewRate}% success rate
-              </p>
-            </div>
-            <CalendarCheck size={42} className="text-indigo-600" />
+        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
+          <div>
+            <p className="opacity-80">Interviews</p>
+            <h2 className="text-3xl font-bold mt-2">{interviews}</h2>
+            <p className="text-sm mt-1">{interviewRate}% success rate</p>
           </div>
+          <CalendarCheck size={36} />
         </div>
 
         {/* Offers */}
-        <div className="backdrop-blur-lg bg-white/70 p-8 rounded-3xl shadow-xl hover:scale-105 transition duration-300">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-gray-500">Offers</p>
-              <h2 className="text-4xl font-bold mt-2">{offers}</h2>
-              <p className="text-sm text-green-500 mt-2">
-                {offerRate}% conversion
-              </p>
-            </div>
-            <Award size={42} className="text-green-600" />
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
+          <div>
+            <p className="opacity-80">Offers</p>
+            <h2 className="text-3xl font-bold mt-2">{offers}</h2>
+            <p className="text-sm mt-1">{offerRate}% conversion</p>
           </div>
+          <Award size={36} />
         </div>
+
       </div>
 
-      {/* Analytics */}
-      <div className="bg-white p-10 rounded-3xl shadow-2xl">
-        <div className="flex items-center gap-3 mb-6">
-          <TrendingUp className="text-indigo-600" />
-          <h2 className="text-2xl font-semibold">
-            Performance Insights
-          </h2>
+      {/* Chart Section */}
+      <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+        <h2 className="text-xl font-semibold mb-6">
+          📊 Application Status Analytics
+        </h2>
+
+        <ApplicationChart data={chartData} />
+      </div>
+
+      {/* Analytics Section */}
+      <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+
+        <h2 className="text-2xl font-semibold mb-6">
+          📈 Performance Insights
+        </h2>
+
+        {/* AI Insight */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-xl mb-6 shadow-md">
+          <h3 className="text-lg font-semibold">🤖 AI Career Insight</h3>
+
+          <p className="mt-1 text-white/90">
+            {total === 0
+              ? "You haven't started applying yet. Begin your journey today."
+              : interviews === 0
+              ? "Try tailoring your resume for each role to increase interview chances."
+              : offers === 0
+              ? "Great! You're getting interviews. Focus on interview preparation."
+              : "Excellent! Your strategy is working. Keep applying smartly."}
+          </p>
+
         </div>
 
-        <div className="space-y-8">
-          {/* AI Insight Panel */}
-<div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-2xl">
-  <h2 className="text-2xl font-semibold mb-4">
-    🤖 AI Career Insight
-  </h2>
+        {/* Interview Progress */}
+        <div className="mb-6">
 
-  {total === 0 && (
-    <p>
-      You haven’t started applying yet. Begin your journey today 
-    </p>
-  )}
-
-  {total > 0 && interviews === 0 && (
-    <p>
-      Try improving your resume keywords to increase interview chances.
-    </p>
-  )}
-
-  {interviews > 0 && offers === 0 && (
-    <p>
-      Great progress! Focus on interview preparation to convert offers.
-    </p>
-  )}
-
-  {offers > 0 && (
-    <p>
-      Excellent work! You are converting applications successfully 
-    </p>
-  )}
-</div>
-
-          {/* Interview Bar */}
-          <div>
-            <div className="flex justify-between mb-2">
-              <span>Interview Rate</span>
-              <span>{interviewRate}%</span>
-            </div>
-            <div className="w-full bg-gray-200 h-4 rounded-full">
-              <div
-                className="bg-indigo-600 h-4 rounded-full transition-all duration-700"
-                style={{ width: `${interviewRate}%` }}
-              />
-            </div>
+          <div className="flex justify-between mb-2">
+            <span>Interview Rate</span>
+            <span>{interviewRate}%</span>
           </div>
 
-          {/* Offer Bar */}
-          <div>
-            <div className="flex justify-between mb-2">
-              <span>Offer Conversion</span>
-              <span>{offerRate}%</span>
-            </div>
-            <div className="w-full bg-gray-200 h-4 rounded-full">
-              <div
-                className="bg-green-500 h-4 rounded-full transition-all duration-700"
-                style={{ width: `${offerRate}%` }}
-              />
-            </div>
+          <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+            <div
+              className="bg-blue-500 h-4 rounded-full transition-all duration-700"
+              style={{ width: `${interviewRate}%` }}
+            />
           </div>
 
         </div>
+
+        {/* Offer Progress */}
+        <div>
+
+          <div className="flex justify-between mb-2">
+            <span>Offer Conversion</span>
+            <span>{offerRate}%</span>
+          </div>
+
+          <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+            <div
+              className="bg-green-500 h-4 rounded-full transition-all duration-700"
+              style={{ width: `${offerRate}%` }}
+            />
+          </div>
+
+        </div>
+
       </div>
 
     </div>
   );
 }
-

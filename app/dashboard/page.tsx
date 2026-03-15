@@ -1,33 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase, CalendarCheck, Award } from "lucide-react";
+import { Briefcase, CalendarCheck, Award, XCircle } from "lucide-react";
 import ApplicationChart from "@/components/ApplicationChart";
+import Link from "next/link";
 
 export default function DashboardPage() {
+  const [applications, setApplications] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [interviews, setInterviews] = useState(0);
   const [offers, setOffers] = useState(0);
+  const [rejected, setRejected] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("applications");
-
-    if (saved) {
-      const apps = JSON.parse(saved);
-
-      setTotal(apps.length);
-      setInterviews(apps.filter((a: any) => a.status === "Interview").length);
-      setOffers(apps.filter((a: any) => a.status === "Offer").length);
-    }
+    fetchApplications();
   }, []);
 
-  const interviewRate = total ? ((interviews / total) * 100).toFixed(0) : 0;
-  const offerRate = total ? ((offers / total) * 100).toFixed(0) : 0;
+  const fetchApplications = async () => {
+    try {
+      const res = await fetch("/api/applications");
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setApplications(data);
+
+        setTotal(data.length);
+        setInterviews(data.filter((a: any) => a.status === "Interview").length);
+        setOffers(data.filter((a: any) => a.status === "Offer").length);
+        setRejected(data.filter((a: any) => a.status === "Rejected").length);
+      }
+    } catch (error) {
+      console.error("Dashboard Fetch Error:", error);
+    }
+  };
+
+  const interviewRate = total ? Math.round((interviews / total) * 100) : 0;
+  const offerRate = total ? Math.round((offers / total) * 100) : 0;
+  const rejectionRate = total ? Math.round((rejected / total) * 100) : 0;
 
   const chartData = [
     { status: "Applied", count: total },
     { status: "Interview", count: interviews },
     { status: "Offer", count: offers },
+    { status: "Rejected", count: rejected },
   ];
 
   return (
@@ -44,36 +59,50 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
-        {/* Applications */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
-          <div>
-            <p className="opacity-80">Total Applications</p>
-            <h2 className="text-3xl font-bold mt-2">{total}</h2>
+        <Link href="/dashboard/applications">
+          <div className="cursor-pointer bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
+            <div>
+              <p className="opacity-80">Total Applications</p>
+              <h2 className="text-3xl font-bold mt-2">{total}</h2>
+            </div>
+            <Briefcase size={36} />
           </div>
-          <Briefcase size={36} />
-        </div>
+        </Link>
 
-        {/* Interviews */}
-        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
-          <div>
-            <p className="opacity-80">Interviews</p>
-            <h2 className="text-3xl font-bold mt-2">{interviews}</h2>
-            <p className="text-sm mt-1">{interviewRate}% success rate</p>
+        <Link href="/dashboard/applications">
+          <div className="cursor-pointer bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
+            <div>
+              <p className="opacity-80">Interviews</p>
+              <h2 className="text-3xl font-bold mt-2">{interviews}</h2>
+              <p className="text-sm mt-1">{interviewRate}% success rate</p>
+            </div>
+            <CalendarCheck size={36} />
           </div>
-          <CalendarCheck size={36} />
-        </div>
+        </Link>
 
-        {/* Offers */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
-          <div>
-            <p className="opacity-80">Offers</p>
-            <h2 className="text-3xl font-bold mt-2">{offers}</h2>
-            <p className="text-sm mt-1">{offerRate}% conversion</p>
+        <Link href="/dashboard/applications">
+          <div className="cursor-pointer bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
+            <div>
+              <p className="opacity-80">Offers</p>
+              <h2 className="text-3xl font-bold mt-2">{offers}</h2>
+              <p className="text-sm mt-1">{offerRate}% conversion</p>
+            </div>
+            <Award size={36} />
           </div>
-          <Award size={36} />
-        </div>
+        </Link>
+
+        <Link href="/dashboard/applications">
+          <div className="cursor-pointer bg-gradient-to-r from-red-500 to-rose-600 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition flex justify-between items-center">
+            <div>
+              <p className="opacity-80">Rejections</p>
+              <h2 className="text-3xl font-bold mt-2">{rejected}</h2>
+              <p className="text-sm mt-1">{rejectionRate}% rejection</p>
+            </div>
+            <XCircle size={36} />
+          </div>
+        </Link>
 
       </div>
 
@@ -86,61 +115,27 @@ export default function DashboardPage() {
         <ApplicationChart data={chartData} />
       </div>
 
-      {/* Analytics Section */}
+      {/* AI Insight */}
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
 
         <h2 className="text-2xl font-semibold mb-6">
           📈 Performance Insights
         </h2>
 
-        {/* AI Insight */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-xl mb-6 shadow-md">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-xl shadow-md">
           <h3 className="text-lg font-semibold">🤖 AI Career Insight</h3>
 
-          <p className="mt-1 text-white/90">
+          <p className="mt-2 text-white/90">
             {total === 0
               ? "You haven't started applying yet. Begin your journey today."
+              : rejectionRate > 70
+              ? "Your rejection rate is high. Improve your resume and target better matching roles."
               : interviews === 0
               ? "Try tailoring your resume for each role to increase interview chances."
               : offers === 0
               ? "Great! You're getting interviews. Focus on interview preparation."
               : "Excellent! Your strategy is working. Keep applying smartly."}
           </p>
-
-        </div>
-
-        {/* Interview Progress */}
-        <div className="mb-6">
-
-          <div className="flex justify-between mb-2">
-            <span>Interview Rate</span>
-            <span>{interviewRate}%</span>
-          </div>
-
-          <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
-            <div
-              className="bg-blue-500 h-4 rounded-full transition-all duration-700"
-              style={{ width: `${interviewRate}%` }}
-            />
-          </div>
-
-        </div>
-
-        {/* Offer Progress */}
-        <div>
-
-          <div className="flex justify-between mb-2">
-            <span>Offer Conversion</span>
-            <span>{offerRate}%</span>
-          </div>
-
-          <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
-            <div
-              className="bg-green-500 h-4 rounded-full transition-all duration-700"
-              style={{ width: `${offerRate}%` }}
-            />
-          </div>
-
         </div>
 
       </div>
